@@ -40,4 +40,329 @@ h2 { font-size: 22px; margin: 32px 0 10px; }
 p { margin: 0 0 12px; max-width: 34em; }
 .soft { color: var(--soft); font-size: 15px; }
 button { font: inherit; color: inherit; cursor: pointer; }
-button:focus-visible, input:​​​​​​​​​​​​​​​​
+button:focus-visible, input:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; }
+
+/* Picks: the verdict word is the hero */
+.pick { background: var(--surface); border-radius: 18px; margin: 0 0 12px; overflow: hidden; }
+.pick > button.head { display: grid; grid-template-columns: 96px 1fr; gap: 14px; align-items: center;
+  width: 100%; text-align: left; background: none; border: 0; padding: 18px 18px 16px; }
+.verb { font-size: 30px; line-height: 1; }
+.v-BUY { color: var(--buy); } .v-SELL { color: var(--sell); } .v-HOLD { color: var(--hold); }
+.v-WATCH { color: var(--watch); } .v-AVOID { color: var(--avoid); }
+.v-ADD { color: var(--buy); } .v-TRIM { color: var(--watch); }
+.form { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 12px; }
+.form input { padding: 12px; }
+.mini { border: 0; background: none; color: var(--soft); font-size: 14px; text-decoration: underline; padding: 4px; }
+.tag { display: inline-block; font-size: 13px; color: var(--soft); border: 1px solid var(--line); border-radius: 999px; padding: 1px 10px; margin-bottom: 8px; }
+.ticker { font-weight: 700; font-size: 18px; }
+.ticker small { font-weight: 400; color: var(--soft); margin-left: 6px; }
+.headline { color: var(--soft); font-size: 15px; line-height: 1.4; }
+.why { padding: 0 18px 18px; border-top: 1px solid var(--line); }
+.why dl { margin: 14px 0 0; }
+.why dt { font-weight: 700; font-size: 15px; margin-top: 12px; }
+.why dd { margin: 2px 0 0; }
+.verdict { margin-top: 16px; padding: 12px 14px; border-radius: 12px; background: var(--page); }
+.row { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+.pill { border: 1.5px solid var(--line); background: none; border-radius: 999px; padding: 8px 16px; font-size: 15px; }
+.pill.on { border-color: var(--teal); background: var(--teal); color: var(--surface); }
+
+.note { background: var(--surface); border-radius: 18px; padding: 18px; margin-bottom: 12px; }
+.lesson h3 { font-family: "Fraunces", Georgia, serif; font-size: 20px; margin: 0 0 6px; }
+
+/* Portfolio */
+.big { font-size: 48px; line-height: 1; margin: 6px 0 8px; }
+.up { color: var(--buy); } .down { color: var(--sell); }
+.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+.compare div { background: var(--surface); border-radius: 14px; padding: 14px; }
+.compare strong { display: block; font-size: 22px; }
+svg.chart { width: 100%; height: 160px; display: block; }
+table { width: 100%; border-collapse: collapse; font-size: 15px; }
+th, td { text-align: left; padding: 10px 6px; border-bottom: 1px solid var(--line); }
+th { color: var(--soft); font-weight: 400; }
+td.num, th.num { text-align: right; }
+
+/* Alerts */
+.alert { background: var(--surface); border-radius: 16px; padding: 16px 18px; margin-bottom: 10px; border-left: 5px solid var(--line); }
+.alert.urgent { border-left-color: var(--sell); background: var(--urgent-bg); }
+.alert.daily { border-left-color: var(--teal); }
+.alert h3 { font-size: 17px; margin: 0 0 4px; display: flex; gap: 8px; align-items: baseline; }
+.alert.unread h3::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--teal); flex: none; transform: translateY(-2px); }
+.alert p { white-space: pre-line; font-size: 15px; margin: 6px 0 0; }
+
+/* Tab bar */
+nav { position: fixed; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--line);
+  display: grid; grid-template-columns: repeat(4, 1fr); padding: 8px 8px calc(env(safe-area-inset-bottom) + 8px); }
+nav button { background: none; border: 0; padding: 8px 0; font-size: 14px; color: var(--soft); position: relative; }
+nav button[aria-current="page"] { color: var(--teal); font-weight: 700; }
+.badge { position: absolute; top: 2px; left: 58%; background: var(--sell); color: #fff; border-radius: 999px; font-size: 11px; padding: 1px 6px; font-weight: 700; }
+
+/* PIN + inputs */
+.pin { min-height: 80vh; display: flex; flex-direction: column; justify-content: center; }
+input { font: inherit; padding: 14px 16px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); width: 100%; }
+.primary { background: var(--teal); color: var(--surface); border: 0; border-radius: 14px; padding: 14px 20px; font-weight: 700; width: 100%; margin-top: 12px; }
+.error { color: var(--sell); }
+.foot { margin-top: 36px; font-size: 13px; color: var(--soft); }
+@media (prefers-reduced-motion: no-preference) { .why { animation: open .18s ease-out; } }
+@keyframes open { from { opacity: 0; transform: translateY(-4px); } }
+</style>
+</head>
+<body>
+<main id="app"></main>
+<nav id="tabs" hidden></nav>
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const money = (n) => "$" + Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const pct = (n) => n == null ? "n/a" : (n > 0 ? "+" : "") + Number(n).toFixed(2) + "%";
+const when = (iso) => iso ? new Date(iso).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" }) : "";
+const VERB = { BUY: "Buy", SELL: "Sell", HOLD: "Hold", WATCH: "Watch", AVOID: "Avoid", ADD: "Add", TRIM: "Trim" };
+
+let pin = localStorage.getItem("pin") || "";
+let data = null, tab = "today", open = new Set();
+let readIds = new Set(JSON.parse(localStorage.getItem("readIds") || "[]"));
+
+async function api(method, body) {
+  const r = await fetch("/api/app", { method, headers: { "x-pin": pin, "Content-Type": "application/json" },
+    body: body ? JSON.stringify(body) : undefined });
+  const j = await r.json().catch(() => ({ error: "The app couldn't reach its server." }));
+  if (!r.ok) throw Object.assign(new Error(j.error), { status: r.status });
+  return j;
+}
+
+async function load() {
+  try {
+    data = await api("GET");
+    $("#tabs").hidden = false;
+    render();
+  } catch (e) {
+    showPin(e.status === 401 && pin ? e.message : e.status === 401 ? "" : e.message);
+  }
+}
+
+function showPin(err) {
+  $("#tabs").hidden = true;
+  $("#app").innerHTML = `<section class="pin">
+    <h1>Stock Coach</h1>
+    <p class="soft">Enter the PIN you set in Vercel.</p>
+    <input id="pinIn" type="password" inputmode="numeric" autocomplete="current-password" aria-label="PIN">
+    <button class="primary" id="pinGo">Open my coach</button>
+    ${err ? `<p class="error" role="alert">${esc(err)}</p>` : ""}
+  </section>`;
+  $("#pinGo").onclick = () => { pin = $("#pinIn").value.trim(); localStorage.setItem("pin", pin); load(); };
+  $("#pinIn").onkeydown = (e) => { if (e.key === "Enter") $("#pinGo").click(); };
+}
+
+function listOf(t) {
+  const p = data.preferences || {};
+  return (p.interested || []).includes(t) ? "interested" : (p.ignored || []).includes(t) ? "ignored" : "none";
+}
+
+async function setList(t, list) {
+  const prev = data.preferences;
+  data.preferences = { interested: (prev.interested || []).filter((x) => x !== t), ignored: (prev.ignored || []).filter((x) => x !== t) };
+  if (list !== "none") data.preferences[list].push(t);
+  render();
+  try { data.preferences = (await api("POST", { type: "list", ticker: t, list })).preferences; }
+  catch (e) { data.preferences = prev; render(); alert("Couldn't save: " + e.message); }
+}
+
+async function saveTo(key, body) {
+  try { const r = await api("POST", body); data[key] = r[key]; render(); return true; }
+  catch (e) { alert("Couldn't save: " + e.message); return false; }
+}
+
+function unread() { return (data.notifications || []).filter((n) => !readIds.has(n.id)).length; }
+
+function renderTabs() {
+  const n = unread();
+  const tabs = [["today", "Today"], ["portfolio", "Portfolio"], ["alerts", "Alerts"], ["learn", "Learn"]];
+  $("#tabs").innerHTML = tabs.map(([k, label]) =>
+    `<button data-tab="${k}" ${tab === k ? 'aria-current="page"' : ""}>${label}${k === "alerts" && n ? `<span class="badge">${n}</span>` : ""}</button>`).join("");
+  $("#tabs").querySelectorAll("button").forEach((b) => b.onclick = () => { tab = b.dataset.tab; render(); window.scrollTo(0, 0); });
+}
+
+function pickCard(p, i, real) {
+  const t = String(p.ticker || "").toUpperCase(), a = String(p.action || "").toUpperCase(), d = p.how_i_decided || {};
+  const isOpen = open.has(i), list = listOf(t);
+  const amount = Number(p.dollars) > 0 ? `<small>${money(p.dollars)}</small>` : "";
+  const rows = [["Why it came up", d.why_flagged], ["The news", d.news], ["What people are saying", d.people],
+                ["The price", d.price], ["Rule that mattered", d.rule_applied]]
+    .filter(([, v]) => v).map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join("");
+  const exit = real && p.exit_price ? ` Safety price: ${money(p.exit_price)}. You'll get an alert if it falls below this.`
+    : a === "BUY" && p.stop_loss_pct ? ` Safety exit: sell if it drops ${esc(p.stop_loss_pct)}%.` : "";
+  return `<article class="pick">
+    <button class="head" data-pick="${i}" aria-expanded="${isOpen}">
+      <span class="verb v-${esc(a)}">${esc(VERB[a] || a)}</span>
+      <span><span class="ticker">${esc(t)}${amount}</span><br><span class="headline">${esc(p.headline)}</span></span>
+    </button>
+    ${isOpen ? `<div class="why">
+      <dl>${rows}</dl>
+      <p class="verdict">${esc(p.verdict)}</p>
+      <p class="soft">${real ? "Your real shares. The coach never trades these." : `Confidence: ${esc(p.confidence || "n/a")}.`}${exit}</p>
+      ${real ? "" : `<div class="row">
+        <button class="pill ${list === "interested" ? "on" : ""}" data-t="${esc(t)}" data-l="interested">${list === "interested" ? "Following" : "Follow"}</button>
+        <button class="pill ${list === "ignored" ? "on" : ""}" data-t="${esc(t)}" data-l="ignored">${list === "ignored" ? "Ignored" : "Ignore"}</button>
+      </div>`}
+    </div>` : ""}
+  </article>`;
+}
+
+function viewToday() {
+  const L = data.latest || {};
+  if (!L.picks) return `<h1>Today</h1><p>No picks yet. Your coach runs its first analysis at 10:00am Eastern on weekdays.</p>`;
+  const picks = L.picks.filter((p) => listOf(String(p.ticker).toUpperCase()) !== "ignored");
+  return `<h1>Today</h1>
+    <p class="soft">Picks from ${esc(when(L.updated))}. Last checked ${esc(when(L.last_checked))}.</p>
+    <p>${esc(L.market_summary)}</p>
+    ${(L.holdings_advice || []).length ? `<h2>Your stocks</h2>
+      <p class="soft">Advice on the shares you actually own. Tap one to see why.</p>
+      ${L.holdings_advice.map((p, i) => pickCard(p, "h" + i, true)).join("")}` : ""}
+    <h2>Practice picks</h2>
+    <p class="soft">For your practice portfolio. Tap a stock to see how the coach decided.</p>
+    ${picks.map((p, i) => pickCard(p, "p" + i, false)).join("")}
+    ${L.watch_out_for ? `<h2>Watch out for</h2><p>${esc(L.watch_out_for)}</p>` : ""}
+    ${L.lesson && L.lesson.title ? `<h2>Today's lesson</h2><div class="note lesson"><h3>${esc(L.lesson.title)}</h3><p>${esc(L.lesson.text)}</p></div>` : ""}
+    <p class="foot">Practice money only. This is an experiment, not financial advice.</p>`;
+}
+
+function chart(history, base) {
+  if (history.length < 2) return `<p class="soft">The chart fills in after a couple of trading days.</p>`;
+  const mine = history.map((h) => h.value), spy = history.map((h) => base * (1 + (h["sp500_return_%"] || 0) / 100));
+  const all = mine.concat(spy), lo = Math.min(...all), hi = Math.max(...all), span = hi - lo || 1;
+  const pts = (arr) => arr.map((v, i) => `${(i / (arr.length - 1)) * 300},${150 - ((v - lo) / span) * 140}`).join(" ");
+  return `<svg class="chart" viewBox="0 0 300 160" preserveAspectRatio="none" role="img" aria-label="Your portfolio compared with the S&P 500">
+    <polyline points="${pts(spy)}" fill="none" stroke="var(--soft)" stroke-width="2" stroke-dasharray="5 4" vector-effect="non-scaling-stroke"/>
+    <polyline points="${pts(mine)}" fill="none" stroke="var(--teal)" stroke-width="3" vector-effect="non-scaling-stroke"/>
+  </svg><p class="soft">Solid line: your picks. Dashed line: the S&P 500 with the same ${money(base)}.</p>`;
+}
+
+function viewReal() {
+  const mine = data.holdings || [], snap = (data.latest || {}).holdings || {};
+  const live = Object.fromEntries((snap.positions || []).map((p) => [p.ticker, p]));
+  const exits = Object.fromEntries(((data.latest || {}).holdings_advice || []).map((a) => [a.ticker, a.exit_price]));
+  const cls = (n) => n > 0 ? "up" : n < 0 ? "down" : "";
+  return `<h2>Your real stocks</h2>
+    <p class="soft">Shares you actually own. The coach advises on these and alerts you, but never trades them.</p>
+    ${mine.length ? `${snap.value != null ? `<div class="big">${money(snap.value)}</div><p class="${cls(snap["gain_%"])}">${pct(snap["gain_%"])} overall</p>` : ""}
+      <table><thead><tr><th>Stock</th><th class="num">Shares</th><th class="num">Value</th><th class="num">Gain</th><th class="num">Safety</th><th></th></tr></thead><tbody>
+      ${mine.map((h) => { const l = live[h.ticker] || {}; return `<tr><td><strong>${esc(h.ticker)}</strong></td>
+        <td class="num">${esc(h.shares)}</td><td class="num">${l.value != null ? money(l.value) : "next run"}</td>
+        <td class="num ${cls(l["gain_%"])}">${l["gain_%"] != null ? pct(l["gain_%"]) : ""}</td>
+        <td class="num">${exits[h.ticker] ? money(exits[h.ticker]) : ""}</td>
+        <td class="num"><button class="mini" data-del="${esc(h.ticker)}" aria-label="Remove ${esc(h.ticker)}">Remove</button></td></tr>`; }).join("")}
+      </tbody></table>` : `<p>None added yet. Add a stock you own to get daily advice and alerts on it.</p>`}
+    <div class="form">
+      <input id="hT" placeholder="Symbol" autocapitalize="characters" aria-label="Stock symbol">
+      <input id="hS" placeholder="Shares" inputmode="decimal" aria-label="Number of shares">
+      <input id="hP" placeholder="Price paid" inputmode="decimal" aria-label="Average price paid per share">
+    </div>
+    <button class="primary" id="hGo">Save stock</button>
+    <p class="soft">To change one, save it again with the new numbers. "Price paid" is your average cost per share.</p>`;
+}
+
+function viewPortfolio() {
+  const s = (data.latest || {}).portfolio, budget = (data.settings || {}).starting_cash || 1000;
+  const cls = (n) => n > 0 ? "up" : n < 0 ? "down" : "";
+  const settingsBox = `<h2>Practice budget</h2>
+    <p class="soft">How much pretend money the practice portfolio starts with.</p>
+    <input id="bAmt" inputmode="decimal" value="${esc(budget)}" aria-label="Practice budget in dollars">
+    <button class="primary" id="bGo">Start over with this budget</button>
+    <p class="soft">This clears practice trades and history. The fresh start happens at the next morning run.</p>`;
+  if (!s) return `<h1>Portfolio</h1>${viewReal()}<h2>Practice portfolio</h2><p>Appears after the first morning run.</p>${settingsBox}`;
+  const pos = s.positions || [];
+  const trades = ((data.portfolio || {}).trades || []).slice().reverse().slice(0, 10);
+  const base = s.starting_cash || 1000;
+  return `<h1>Portfolio</h1>
+    ${viewReal()}
+    <h2>Practice portfolio</h2>
+    <span class="tag">Pretend money</span>
+    <p class="soft">Started with ${money(base)} on ${esc(s.since)}</p>
+    <div class="big">${money(s.value)}</div>
+    <div class="compare">
+      <div>Your picks<strong class="${cls(s["return_%"])}">${pct(s["return_%"])}</strong></div>
+      <div>S&amp;P 500<strong class="${cls(s["sp500_return_%"])}">${pct(s["sp500_return_%"])}</strong></div>
+    </div>
+    ${chart(data.history || [], base)}
+    <h3>What it owns</h3>
+    ${pos.length ? `<table><thead><tr><th>Stock</th><th class="num">Value</th><th class="num">Gain</th><th class="num">Safety exit</th></tr></thead><tbody>
+      ${pos.map((p) => `<tr><td><strong>${esc(p.ticker)}</strong></td><td class="num">${money(p.value)}</td>
+        <td class="num ${cls(p["gain_%"])}">${pct(p["gain_%"])}</td><td class="num">${money(p.stop_price)}</td></tr>`).join("")}
+      </tbody></table>` : `<p>Nothing yet. All ${money(s.cash)} is in cash, which is a fine place to wait.</p>`}
+    <p class="soft">Cash: ${money(s.cash)}. The safety exit is the price where the coach sells automatically to limit a loss.</p>
+    <h3>Recent practice trades</h3>
+    ${trades.length ? trades.map((t) => `<div class="note"><strong class="v-${esc(t.action)}">${esc(VERB[t.action] || t.action)}</strong>
+      ${esc(t.ticker)}: ${money(t.dollars)} at ${money(t.price)}<br><span class="soft">${esc(when(t.time))}. ${esc(t.reason)}</span></div>`).join("")
+      : `<p class="soft">No trades yet.</p>`}
+    ${settingsBox}`;
+}
+
+function viewAlerts() {
+  const notes = data.notifications || [];
+  return `<h1>Alerts</h1>
+    ${notes.length ? `<div class="row"><button class="pill" id="readAll">Mark all as read</button></div><div style="height:14px"></div>` : ""}
+    ${notes.length ? notes.map((n) => `<div class="alert ${esc(n.level)} ${readIds.has(n.id) ? "" : "unread"}">
+        <h3>${esc(n.title)}</h3><span class="soft">${esc(when(n.time))}</span><p>${esc(n.body)}</p></div>`).join("")
+      : `<p>No alerts yet. You'll see a note here each morning, and an urgent alert only when something needs your attention.</p>`}`;
+}
+
+function viewLearn() {
+  const lessons = (data.lessons || []).slice().reverse();
+  const p = data.preferences || {};
+  const chips = (arr, list) => arr.length ? `<div class="row">${arr.map((t) =>
+    `<button class="pill on" data-t="${esc(t)}" data-l="none" aria-label="Remove ${esc(t)}">${esc(t)} ✕</button>`).join("")}</div>`
+    : `<p class="soft">None yet.</p>`;
+  return `<h1>Learn</h1>
+    <p class="soft">One short lesson every trading day.</p>
+    ${lessons.length ? lessons.map((l) => `<div class="note lesson"><h3>${esc(l.title)}</h3><p>${esc(l.text)}</p><span class="soft">${esc(l.date)}</span></div>`).join("")
+      : `<p>Your first lesson arrives with tomorrow's picks.</p>`}
+    <h2>Stocks you follow</h2>
+    <p class="soft">The coach checks these every day and watches them for big moves.</p>
+    ${chips(p.interested || [])}
+    <div class="row"><input id="addT" placeholder="Add a stock symbol, like AAPL" autocapitalize="characters" aria-label="Stock symbol"></div>
+    <button class="primary" id="addGo">Follow this stock</button>
+    <h2>Stocks you ignore</h2>
+    <p class="soft">These never show up in your picks.</p>
+    ${chips(p.ignored || [])}
+    <p class="foot">Practice money only. This is an experiment, not financial advice.</p>`;
+}
+
+function render() {
+  if (tab === "alerts" && data.notifications) {
+    setTimeout(() => { data.notifications.forEach((n) => readIds.add(n.id));
+      localStorage.setItem("readIds", JSON.stringify([...readIds].slice(-500))); renderTabs(); }, 2500);
+  }
+  renderTabs();
+  $("#app").innerHTML = { today: viewToday, portfolio: viewPortfolio, alerts: viewAlerts, learn: viewLearn }[tab]();
+  $("#app").querySelectorAll("[data-pick]").forEach((b) => b.onclick = () => {
+    const i = b.dataset.pick; open.has(i) ? open.delete(i) : open.add(i); render(); });
+  $("#app").querySelectorAll("[data-l]").forEach((b) => b.onclick = () => {
+    const t = b.dataset.t, l = b.dataset.l; setList(t, l !== "none" && listOf(t) === l ? "none" : l); });
+  const ra = $("#readAll");
+  if (ra) ra.onclick = () => { data.notifications.forEach((n) => readIds.add(n.id));
+    localStorage.setItem("readIds", JSON.stringify([...readIds])); render(); };
+  const hGo = $("#hGo");
+  if (hGo) hGo.onclick = () => {
+    const ticker = $("#hT").value.trim().toUpperCase(), shares = parseFloat($("#hS").value), avg = parseFloat($("#hP").value || "0");
+    if (!ticker || !(shares > 0)) return alert("Enter a symbol and the number of shares.");
+    saveTo("holdings", { type: "holding", ticker, shares, avg_cost: avg || 0 });
+  };
+  $("#app").querySelectorAll("[data-del]").forEach((b) => b.onclick = () => {
+    if (confirm(`Remove ${b.dataset.del} from your real stocks?`)) saveTo("holdings", { type: "holding", ticker: b.dataset.del, shares: 0 });
+  });
+  const bGo = $("#bGo");
+  if (bGo) bGo.onclick = () => {
+    const amt = parseFloat($("#bAmt").value.replace(/[$,]/g, ""));
+    if (!(amt >= 100)) return alert("Enter a budget of at least $100.");
+    if (confirm(`Start the practice portfolio over with ${money(amt)}? Practice trades and history will be cleared at the next morning run.`))
+      saveTo("settings", { type: "settings", starting_cash: amt, reset: true });
+  };
+  const add = $("#addGo");
+  if (add) add.onclick = () => { const t = $("#addT").value.trim().toUpperCase(); if (t) setList(t, "interested"); };
+}
+
+document.addEventListener("visibilitychange", () => { if (!document.hidden && data) load(); });
+pin ? load() : showPin("");
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});
+</script>
+</body>
+</html>
