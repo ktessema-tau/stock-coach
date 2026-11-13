@@ -9,6 +9,7 @@ const FILES = {
   preferences: ["preferences.json", { interested: [], ignored: [] }],
   holdings: ["holdings.json", []],
   settings: ["settings.json", { starting_cash: 1000 }],
+  push: ["push_subscriptions.json", []],
 };
 
 function gh(path, opts = {}) {
@@ -28,7 +29,8 @@ async function readFile(name, fallback) {
   if (r.status === 404) return { value: fallback, sha: null };
   if (!r.ok) throw new Error(`GitHub said ${r.status} when reading ${name}. Check GITHUB_TOKEN and GITHUB_REPO in Vercel.`);
   const j = await r.json();
-  return { value: JSON.parse(Buffer.from(j.content, "base64").toString("utf8")), sha: j.sha };
+  const text = Buffer.from(j.content, "base64").toString("utf8").replace(/\bNaN\b|-?\bInfinity\b/g, "null");
+  return { value: JSON.parse(text), sha: j.sha };
 }
 
 module.exports = async (req, res) => {
@@ -46,6 +48,8 @@ module.exports = async (req, res) => {
         out[key] = (await readFile(file, fallback)).value;
       }));
       out.portfolio = { trades: (out.portfolio.trades || []).slice(-30) };
+      delete out.push;
+      out.history = (out.history || []).filter((h) => typeof h.value === "number");
       return res.status(200).json(out);
     }
 
@@ -78,6 +82,14 @@ module.exports = async (req, res) => {
         if (!(cash >= 100 && cash <= 10000000)) return res.status(400).json({ error: "Budget must be between $100 and $10,000,000." });
         file = "settings.json";
         change = (v) => ({ ...v, starting_cash: cash, ...(body.reset ? { reset_id: new Date().toISOString() } : {}) });
+      } else if (type === "push") {     // phone notifications
+        const sub = body.subscription || {};
+        if (!/^https:\/\//.test(sub.endpoint || "") || !sub.keys || !sub.keys.p256dh || !sub.keys.auth) {
+          return res.status(400).json({ error: "That notification setup didn't look right." });
+        }
+        file = "push_subscriptions.json";
+        change = (v) => [...(Array.isArray(v) ? v : []).filter((x) => x.endpoint !== sub.endpoint),
+                         { endpoint: sub.endpoint, keys: { p256dh: sub.keys.p256dh, auth: sub.keys.auth } }].slice(-10);
       } else {
         return res.status(400).json({ error: "Unknown request." });
       }
@@ -95,7 +107,7 @@ module.exports = async (req, res) => {
             ...(sha ? { sha } : {}),
           }),
         });
-        if (r.ok) return res.status(200).json({ [key]: updated });
+        if (r.ok) return res.status(200).json(key === "push" ? { push: "saved" } : { [key]: updated });
         if (r.status !== 409 && r.status !== 422) throw new Error(`GitHub said ${r.status} when saving.`);
       }
       throw new Error("Couldn't save right now. Try again in a moment.");
@@ -106,3 +118,4 @@ module.exports = async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 };
+// end of file
